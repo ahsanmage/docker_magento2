@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#HOST_IP=`ip -4 addr show scope global dev docker0 | grep inet | awk '{print \$2}' | cut -d / -f 1`
+#export HOST_IP=10.0.180.53
+docker-compose exec --user www-data nginx /var/www/html/bin/magento $@

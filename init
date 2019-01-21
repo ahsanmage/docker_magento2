@@ -1,0 +1,96 @@
+
+## Docker Settings ##
+
+# Containers HOST
+export CONTAINER_HOST=m22_host
+
+# Containers Network
+export CONTAINER_NETWORK=m22_network
+
+# Containers Name
+export CONTAINER_NGINX=magento22_nginx
+export CONTAINER_MYSQL=magento22_mysql
+export CONTAINER_PMA=magento22_pma
+export CONTAINER_REDIS=magento22_redis
+export CONTAINER_REDIS_SESSION=magento22_redis_session
+
+
+#########
+
+# MySQL
+export MYSQL_ROOT_USER_NEW=root
+export MYSQL_ROOT_PASSWORD_NEW=mysql
+
+export MYSQL_USER_NEW=user_m22
+export MYSQL_PASSWORD_NEW=mysql
+
+export MYSQL_DATABASE_NEW=db_m22
+export MYSQL_ALLOW_EMPTY_PASSWORD_NEW=0
+
+# phpMyAdmin
+export PMA_PASSWORD_NEW=mysql
+export PMA_USER_NEW=user_m22
+
+# PORT
+export MYSQL_PORT_NEW=33022
+export WEB_PORT_NEW=5022
+export PMA_PORT_NEW=1022
+export XDEBUG_PORT_NEW=9022
+
+# Directory
+export PROJECT_DIRECTORY=./source
+
+dir=./source
+removeimage=no
+
+docker -v
+
+# login to docker. You must have access to private repositpory.
+docker login
+
+
+# Remove all similar containers
+if [ "${removeimage}" == "yes" ]
+then
+  docker-compose ps
+  echo "Input Tag Name to Remove Image "
+  read tagName
+  docker rm -f $(docker ps -a -q -f name=${tagName}_*)
+  echo "Remove Volume (y/n)"
+  read volumeName
+  if [ "${volumeName}" == "y" ]
+  then
+    docker volume prune
+  fi
+fi
+
+docker image pull ahsandev/magento2.2
+
+
+if [ -d ${PROJECT_DIRECTORY}/app/etc ]; then  
+  if [ ! -e ${PROJECT_DIRECTORY}/app/etc/env.php ]; then
+    cp env.sample.php ${PROJECT_DIRECTORY}/app/etc/env.php;
+  fi
+fi
+
+chmod -R 777 ${PROJECT_DIRECTORY}
+
+#echo $MYSQL_ROOT_USER_NEW
+#echo "+++++++="
+PROJECT_DIRECTORY=${dir} docker-compose up -d
+
+echo "Starting up..."
+# 
+docker exec -i -t $(docker-compose ps -q ${CONTAINER_HOST}) mysql -u${MYSQL_ROOT_USER_NEW} -p${MYSQL_PASSWORD_NEW} -e "DROP DATABASE IF EXISTS ${MYSQL_DATABASE_NEW};CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE_NEW};GRANT ALL ON ${MYSQL_DATABASE_NEW}.* TO '${MYSQL_USER_NEW}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD_NEW}';GRANT ALL PRIVILEGES ON *.* TO '${MYSQL_USER_NEW}'@'%' REQUIRE NONE WITH GRANT OPTION MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0;"
+docker exec -i -t $(docker-compose ps -q nginx) /bin/bash install-magento2 2.2.*
+docker exec -i -t $(docker-compose ps -q nginx) /bin/bash redis-flush
+#docker-compose -f docker-compose.elasticsearch.yml up -d
+docker-compose ps
+echo "
+===================== 🚀 Done 🚀 ===================
+      Magento 2 Installed successfully!
+      🌎 Admin: http://localhost:${WEB_PORT_NEW}/admin
+      👤 User: admin
+      🔑 Password: admin@123
+      🌎 Front-end: http://localhost:${WEB_PORT_NEW}/
+===================== 🚀 Done 🚀 ==================="

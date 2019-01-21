@@ -1,0 +1,71 @@
+version: '3.5'
+services:
+  nginx:
+    image: ahsandev/magento2.3
+    container_name: ${CONTAINER_NGINX}
+    ports:
+      - ${WEB_PORT_NEW}:80 # web
+    volumes:
+      - ${PROJECT_DIRECTORY}:/var/www/html
+      - ~/.composer:/var/www/.composer
+      - ~/.npm:/var/www/.npm
+    depends_on:
+      - m22_host
+    links:
+      - m22_host
+    networks:
+      - m22_network
+
+  m22_host:
+    image: mysql:5.7
+    container_name: ${CONTAINER_MYSQL}
+    ports:
+    - ${MYSQL_PORT_NEW}:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD_NEW}
+      - MYSQL_DATABASE=${MYSQL_DATABASE_NEW}
+      - MYSQL_USER=${MYSQL_USER_NEW}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD_NEW}
+    volumes:
+       - ./mysqlconf:/etc/mysql/conf.d
+       - ./dbdata:/var/lib/mysql
+    networks:
+      - m22_network
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: ${CONTAINER_PMA}
+    environment:
+     - PMA_HOST=m22_host
+     - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD_NEW}
+     - PMA_PORT=3306
+    ports:
+     - ${PMA_PORT_NEW}:80
+    networks:
+      - m22_network
+
+  redis:
+    image: redis
+    container_name: ${CONTAINER_REDIS}
+    ports:
+     - 6379
+    networks:
+      - m22_network
+
+  redis-session:
+    image: redis
+    container_name: ${CONTAINER_REDIS_SESSION}
+    ports:
+     - 6379
+    networks:
+      - m22_network
+
+networks:
+  m22_network:
+    name: m22_network
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local
