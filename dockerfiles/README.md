@@ -23,10 +23,10 @@ Install [Docker](https://docs.docker.com/engine/installation/linux/docker-ce/ubu
 
 ### How to use
 
-Execute in your terminal, change the *MYMAGENTO2* to use the name of your project:
+Execute in your terminal, change the *docker_magento2* to use the name of your project:
 
 ```
-curl -s https://raw.githubusercontent.com/clean-docker/Magento2/master/init | bash -s MYMAGENTO2 clone
+curl -s https://raw.githubusercontent.com/ahsanmage/docker_magento2/master/init | bash -s docker_magento2 clone
 ```
 
 If you want to install the Magento 2, use like that:
@@ -46,9 +46,8 @@ Enjoy your new panels!
 
 **Web server:** http://localhost/
 
-**PHPMyAdmin:** http://localhost:8080
+**PHPMyAdmin:** http://localhost:1022
 
-**Local emails:** http://localhost:8025
 
 ### Features commands
 
@@ -80,7 +79,7 @@ or to run in the background using detached mode
 
 ### License
 
-MIT © 2018 [Rafael Corrêa Gomes](https://github.com/rafaelstz/) and [contributors](https://github.com/clean-docker/Magento2/graphs/contributors).
+MIT © 2018 [contributors](https://github.com/ahsanmage/).
 
 
 Step-by-step instructions
